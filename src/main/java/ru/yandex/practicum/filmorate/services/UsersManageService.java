@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.ItemNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.dto.UserDto;
 
@@ -30,6 +31,11 @@ public class UsersManageService extends BaseIdCountableService{
 		user.setLogin(dto.getLogin());
 		user.setEmail(dto.getEmail());
 		user.setBirthday(dto.getBirthday());
+		return user;
+	}
+
+	public User replace(User user) {
+		users.put(user.getId(), user);
 		return user;
 	}
 

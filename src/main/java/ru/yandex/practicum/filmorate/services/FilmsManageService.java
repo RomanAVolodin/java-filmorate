@@ -31,4 +31,9 @@ public class FilmsManageService extends BaseIdCountableService {
 		film.setDuration(dto.getDuration());
 		return film;
 	}
+
+	public Film replace(Film film) {
+		films.put(film.getId(), film);
+		return film;
+	}
 }
