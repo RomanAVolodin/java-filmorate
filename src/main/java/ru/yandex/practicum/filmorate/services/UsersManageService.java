@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.ItemNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.dto.UserDto;
@@ -35,6 +36,9 @@ public class UsersManageService extends BaseIdCountableService{
 	}
 
 	public User replace(User user) {
+		if (users.get(user.getId()) == null) {
+			throw new ValidationException("User was not found by this id");
+		}
 		users.put(user.getId(), user);
 		return user;
 	}

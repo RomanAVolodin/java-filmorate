@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.services;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.ItemNotFoundException;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.dto.FilmDto;
 
@@ -33,6 +34,9 @@ public class FilmsManageService extends BaseIdCountableService {
 	}
 
 	public Film replace(Film film) {
+		if (films.get(film.getId()) == null) {
+			throw new ValidationException("Film was not found by this id");
+		}
 		films.put(film.getId(), film);
 		return film;
 	}
