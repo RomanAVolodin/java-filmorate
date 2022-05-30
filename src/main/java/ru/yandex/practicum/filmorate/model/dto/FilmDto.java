@@ -1,12 +1,11 @@
 package ru.yandex.practicum.filmorate.model.dto;
 
 import lombok.Data;
-import ru.yandex.practicum.filmorate.constraints.PositiveDuration;
 import ru.yandex.practicum.filmorate.constraints.ReleaseDate;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
-import java.time.Duration;
 import java.time.LocalDate;
 
 @Data
@@ -20,6 +19,6 @@ public class FilmDto {
 	@ReleaseDate(message = "Release date should be greater than 28.12.1895")
 	private final LocalDate releaseDate;
 
-	@PositiveDuration(message = "Duration must be positive")
-	private final Duration duration;
+	@Positive(message = "Duration must be positive")
+	private final int duration;
 }
