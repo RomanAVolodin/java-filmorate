@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.dto.FilmDto;
-import ru.yandex.practicum.filmorate.services.FilmsManageService;
+import ru.yandex.practicum.filmorate.service.FilmsService;
 
 import javax.validation.Valid;
 import java.util.Collection;
@@ -16,16 +16,26 @@ import java.util.Collection;
 @Slf4j
 @RequestMapping(value = "/films")
 public class FilmController {
-	private final FilmsManageService service;
+	private final FilmsService service;
 
 	@Autowired
-	FilmController(FilmsManageService service) {
+	FilmController(FilmsService service) {
 		this.service = service;
 	}
 
 	@GetMapping(value = "")
 	public Collection<Film> getFilmsList() {
-		return service.films.values();
+		return service.getAll();
+	}
+
+	@GetMapping(value = "popular")
+	public Collection<Film> getPopularFilm(@RequestParam(name = "count", defaultValue = "10") int count) {
+		return service.getPopularFilms(count);
+	}
+
+	@GetMapping(value = "{id}")
+	public Film getFilm(@PathVariable(name = "id") int id) {
+		return service.getById(id);
 	}
 
 	@PostMapping(value = "", consumes = {"application/json"})
@@ -41,10 +51,21 @@ public class FilmController {
 		return service.update(id, dto);
 	}
 
-	// Ниже детский код для прохождения тестов. Я такое заворачиваю, если кто пришлет на ревью
 	@PutMapping(value = "")
 	public Film editFilm(@Valid @RequestBody Film dto) {
 		log.info("Film is updating: {}", dto);
 		return service.replace(dto);
+	}
+
+	@PutMapping(value = "{id}/like/{userId}")
+	@ResponseStatus(HttpStatus.OK)
+	public void addLike(@PathVariable(name = "id") int id, @PathVariable(name = "userId") int userId) {
+		service.addLikeFromUser(id, userId);
+	}
+
+	@DeleteMapping(value = "{id}/like/{userId}")
+	@ResponseStatus(HttpStatus.OK)
+	public void removeLike(@PathVariable(name = "id") int id, @PathVariable(name = "userId") int userId) {
+		service.removeLikeFromUser(id, userId);
 	}
 }

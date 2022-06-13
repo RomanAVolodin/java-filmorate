@@ -1,18 +1,26 @@
-package ru.yandex.practicum.filmorate.services;
+package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.ItemNotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.dto.FilmDto;
+import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
-@Service
+@Component
 @Slf4j
-public class FilmsManageService extends BaseIdCountableService {
-	public final HashMap<Integer, Film> films = new HashMap<>();
+public class InMemoryFilmStorage extends BaseIdCountable implements FilmStorage {
+	private final HashMap<Integer, Film> films = new HashMap<>();
+
+	public Collection<Film> getAll() {
+		return films.values();
+	}
 
 	public Film create(FilmDto dto) {
 		var film = new Film(getNextId(), dto.getName(), dto.getDescription(), dto.getReleaseDate(), dto.getDuration());
@@ -20,12 +28,25 @@ public class FilmsManageService extends BaseIdCountableService {
 		return film;
 	}
 
-	public Film update(int id, FilmDto dto) {
+	public Film getById(int id) {
 		var film = films.get(id);
 		if (film == null) {
 			log.error("Film was not found by this id");
 			throw new ItemNotFoundException("Film was not found by this id");
 		}
+		return film;
+	}
+
+	@Override
+	public List<Film> getPopularFilms(int count) {
+		return getAll().stream()
+				.sorted(Comparator.comparing(Film::getLikesAmount).reversed())
+				.limit(count)
+				.collect(Collectors.toList());
+	}
+
+	public Film update(int id, FilmDto dto) {
+		var film = getById(id);
 		film.setName(dto.getName());
 		film.setDescription(dto.getDescription());
 		film.setReleaseDate(dto.getReleaseDate());
@@ -34,9 +55,7 @@ public class FilmsManageService extends BaseIdCountableService {
 	}
 
 	public Film replace(Film film) {
-		if (films.get(film.getId()) == null) {
-			throw new ValidationException("Film was not found by this id");
-		}
+		var existingFilm = getById(film.getId());
 		films.put(film.getId(), film);
 		return film;
 	}
