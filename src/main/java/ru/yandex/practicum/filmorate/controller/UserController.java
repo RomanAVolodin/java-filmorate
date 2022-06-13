@@ -25,28 +25,24 @@ public class UserController {
 	}
 
 	@GetMapping(value = "")
-	@ResponseBody
 	public Collection<User> getUsersList() {
 		return service.users.values();
 	}
 
 	@PostMapping(value = "", consumes = {"application/json"})
 	@ResponseStatus(HttpStatus.CREATED)
-	@ResponseBody
 	public User create(@Valid @RequestBody UserDto dto) {
 		log.info("User created: {}", dto);
 		return service.create(dto);
 	}
 
 	@PatchMapping(value = "{id}", consumes = {"application/json"})
-	@ResponseBody
 	public User updateUser(@PathVariable(name = "id") int id, @Valid @RequestBody UserDto dto) {
 		log.info("User updated: {}", dto);
 		return service.update(id, dto);
 	}
 
 	@PutMapping(value = "")
-	@ResponseBody
 	public User editUser(@Valid @RequestBody User dto) {
 		log.info("User is updating: {}", dto);
 		return service.replace(dto);

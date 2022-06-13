@@ -24,21 +24,18 @@ public class FilmController {
 	}
 
 	@GetMapping(value = "")
-	@ResponseBody
 	public Collection<Film> getFilmsList() {
 		return service.films.values();
 	}
 
 	@PostMapping(value = "", consumes = {"application/json"})
 	@ResponseStatus(HttpStatus.CREATED)
-	@ResponseBody
 	public Film create(@Valid @RequestBody FilmDto dto) {
 		log.info("Film created: {}", dto);
 		return service.create(dto);
 	}
 
 	@PatchMapping(value = "{id}", consumes = {"application/json"})
-	@ResponseBody
 	public Film updateFilm(@PathVariable(name = "id") int id, @Valid @RequestBody FilmDto dto) {
 		log.info("Film is updating: {}", dto);
 		return service.update(id, dto);
@@ -46,7 +43,6 @@ public class FilmController {
 
 	// Ниже детский код для прохождения тестов. Я такое заворачиваю, если кто пришлет на ревью
 	@PutMapping(value = "")
-	@ResponseBody
 	public Film editFilm(@Valid @RequestBody Film dto) {
 		log.info("Film is updating: {}", dto);
 		return service.replace(dto);
