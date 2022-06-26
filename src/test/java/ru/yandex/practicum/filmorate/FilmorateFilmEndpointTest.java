@@ -47,7 +47,7 @@ class FilmorateFilmEndpointTest {
 				entry("name", "name"),
 				entry("description", "description"),
 				entry("releaseDate", "2022-12-29"),
-				entry("duration", "PT2H")
+				entry("duration", "300")
 		);
 		var json = gson.toJson(film);
 		final HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json);
@@ -73,7 +73,7 @@ class FilmorateFilmEndpointTest {
 				entry("name", ""),
 				entry("description", "description"),
 				entry("releaseDate", "2022-12-29"),
-				entry("duration", "PT2H")
+				entry("duration", "300")
 		);
 		var json = gson.toJson(film);
 		final HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json);
@@ -86,7 +86,7 @@ class FilmorateFilmEndpointTest {
 			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 			assertNotNull(response);
 			assertEquals(response.statusCode(), HttpStatus.BAD_REQUEST.value());
-			assertEquals(response.body(), "{\"name\":\"Film title must not be blank\"}");
+			assertEquals(response.body(), "{\"error\":\"name: Film title must not be blank\"}");
 		} catch (IOException | InterruptedException e) {
 			throw new RuntimeException(e.getMessage());
 		}
@@ -105,7 +105,7 @@ class FilmorateFilmEndpointTest {
 						"description description description description description description description " +
 						"description description description description description description "),
 				entry("releaseDate", "2022-12-29"),
-				entry("duration", "PT2H")
+				entry("duration", "300")
 		);
 		var json = gson.toJson(film);
 		final HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json);
@@ -118,7 +118,7 @@ class FilmorateFilmEndpointTest {
 			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 			assertNotNull(response);
 			assertEquals(response.statusCode(), HttpStatus.BAD_REQUEST.value());
-			assertEquals(response.body(), "{\"description\":\"Description should be less than 200 symbols\"}");
+			assertEquals(response.body(), "{\"error\":\"description: Description should be less than 200 symbols\"}");
 		} catch (IOException | InterruptedException e) {
 			throw new RuntimeException(e.getMessage());
 		}
@@ -132,7 +132,7 @@ class FilmorateFilmEndpointTest {
 				entry("name", "name"),
 				entry("description", "description"),
 				entry("releaseDate", "1894-12-29"),
-				entry("duration", "PT2H")
+				entry("duration", "300")
 		);
 		var json = gson.toJson(film);
 		final HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json);
@@ -145,7 +145,7 @@ class FilmorateFilmEndpointTest {
 			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 			assertNotNull(response);
 			assertEquals(response.statusCode(), HttpStatus.BAD_REQUEST.value());
-			assertEquals(response.body(), "{\"releaseDate\":\"Release date should be greater than 28.12.1895\"}");
+			assertEquals(response.body(), "{\"error\":\"releaseDate: Release date should be greater than 28.12.1895\"}");
 		} catch (IOException | InterruptedException e) {
 			throw new RuntimeException(e.getMessage());
 		}
@@ -159,7 +159,7 @@ class FilmorateFilmEndpointTest {
 				entry("name", "name"),
 				entry("description", "description"),
 				entry("releaseDate", "2021-12-29"),
-				entry("duration", "-PT2H")
+				entry("duration", "-300")
 		);
 		var json = gson.toJson(film);
 		final HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofString(json);
@@ -172,7 +172,7 @@ class FilmorateFilmEndpointTest {
 			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 			assertNotNull(response);
 			assertEquals(response.statusCode(), HttpStatus.BAD_REQUEST.value());
-			assertEquals(response.body(), "{\"duration\":\"Duration must be positive\"}");
+			assertEquals(response.body(), "{\"error\":\"duration: Duration must be positive\"}");
 		} catch (IOException | InterruptedException e) {
 			throw new RuntimeException(e.getMessage());
 		}

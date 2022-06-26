@@ -84,7 +84,7 @@ public class UserEndpointsTest {
 			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 			assertNotNull(response);
 			assertEquals(response.statusCode(), HttpStatus.BAD_REQUEST.value());
-			assertEquals(response.body(), "{\"email\":\"Enter correct email\"}");
+			assertEquals(response.body(), "{\"error\":\"email: Enter correct email\"}");
 		} catch (IOException | InterruptedException e) {
 			throw new RuntimeException(e.getMessage());
 		}
@@ -111,7 +111,7 @@ public class UserEndpointsTest {
 			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 			assertNotNull(response);
 			assertEquals(response.statusCode(), HttpStatus.BAD_REQUEST.value());
-			assertEquals(response.body(), "{\"login\":\"Login should be set\"}");
+			assertEquals(response.body(), "{\"error\":\"login: Login should be set\"}");
 		} catch (IOException | InterruptedException e) {
 			throw new RuntimeException(e.getMessage());
 		}
@@ -138,7 +138,7 @@ public class UserEndpointsTest {
 			HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 			assertNotNull(response);
 			assertEquals(response.statusCode(), HttpStatus.BAD_REQUEST.value());
-			assertEquals(response.body(), "{\"birthday\":\"Date of birth should be in the past\"}");
+			assertEquals(response.body(), "{\"error\":\"birthday: Date of birth should be in the past\"}");
 		} catch (IOException | InterruptedException e) {
 			throw new RuntimeException(e.getMessage());
 		}
