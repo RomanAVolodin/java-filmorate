@@ -1,14 +1,17 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.dto.FilmDto;
 import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
+@Qualifier("memory")
 @Slf4j
 public class InMemoryFilmStorage implements FilmStorage {
 	private final HashMap<Integer, Film> films = new HashMap<>();
@@ -34,8 +37,23 @@ public class InMemoryFilmStorage implements FilmStorage {
 				.collect(Collectors.toList());
 	}
 
-	public Film replace(Film film) {
-		films.put(film.getId(), film);
+	@Override
+	public void addLike(int userId, int filmId) {
+		var film = films.get(filmId);
+		film.addLike(userId);
+	}
+
+	@Override
+	public void removeLike(int userId, int filmId) {
+		var film = films.get(filmId);
+		film.removeLike(userId);
+	}
+
+	public Film replace(FilmDto dto) {
+		var film = new Film(
+				dto.getId(), dto.getName(), dto.getDescription(), dto.getReleaseDate(), dto.getDuration(), dto.getRate()
+		);
+		films.put(dto.getId(), film);
 		return film;
 	}
 }

@@ -54,7 +54,7 @@ public class FilmController {
 	}
 
 	@PutMapping(value = "")
-	public Film editFilm(@Valid @RequestBody Film dto) {
+	public Film editFilm(@Valid @RequestBody FilmDto dto) {
 		log.info("Film is updating: {}", dto);
 		return service.replace(dto);
 	}
@@ -70,5 +70,4 @@ public class FilmController {
 	public void removeLike(@PathVariable(name = "id") int id, @PathVariable(name = "userId") int userId) {
 		service.removeLikeFromUser(id, userId);
 	}
-
 }

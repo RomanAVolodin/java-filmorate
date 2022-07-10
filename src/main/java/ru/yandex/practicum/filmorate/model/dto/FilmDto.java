@@ -7,10 +7,14 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
 
 @Data
 public class FilmDto {
-	@NotBlank(message = "Film title must not be blank")
+	private int id;
+
+	@NotBlank(message = "Film's title must not be blank")
 	private final String name;
 
 	@Size(max = 200, message = "Description should be less than 200 symbols")
@@ -21,4 +25,10 @@ public class FilmDto {
 
 	@Positive(message = "Duration must be positive")
 	private final int duration;
+
+	private final int rate;
+
+	private HashMap<String, Integer> mpa;
+
+    private List<HashMap<String, Integer>> genres;
 }

@@ -12,7 +12,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class User {
 	@NonNull
-	private final int id;
+	private int id;
 
 	@NonNull
 	private String email;

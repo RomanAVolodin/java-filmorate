@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.interfaces;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.dto.FilmDto;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -10,9 +11,13 @@ public interface FilmStorage {
 
 	Film create(Film film);
 
-	Film replace(Film film);
+	Film replace(FilmDto dto);
 
 	Optional<Film> getById(int id);
 
 	Collection<Film> getPopularFilms(int count);
+
+	void addLike(int userId, int filmId);
+
+	void removeLike(int userId, int filmId);
 }

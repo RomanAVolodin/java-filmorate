@@ -16,4 +16,10 @@ public interface UserStorage {
 	User replace(User user);
 
 	Collection<User> getUsersByIdSet(Set<Integer> ids);
+
+	void addFriend(int id, int friendId);
+
+	void removeFriend(int id, int friendId);
+
+	Collection<User> getUserFriends(int id);
 }
