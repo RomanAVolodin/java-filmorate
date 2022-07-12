@@ -15,6 +15,7 @@ import java.util.Optional;
 @Component
 @Qualifier("database")
 public class MpaDbStorage implements MpaStorage {
+
 	private final JdbcTemplate jdbcTemplate;
 
 	public MpaDbStorage(JdbcTemplate jdbcTemplate) {

@@ -7,8 +7,9 @@ import lombok.RequiredArgsConstructor;
 @Data
 @RequiredArgsConstructor
 public class Genre {
+
 	@NonNull
-	private int id;
+	private Integer id;
 
 	@NonNull
 	private String name;

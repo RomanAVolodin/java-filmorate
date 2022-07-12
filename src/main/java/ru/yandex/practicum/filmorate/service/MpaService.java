@@ -15,7 +15,7 @@ public class MpaService {
 	private final MpaStorage storage;
 
 	@Autowired
-	MpaService(@Qualifier("database") MpaStorage storage) {
+	public MpaService(@Qualifier("database") MpaStorage storage) {
 		this.storage = storage;
 	}
 

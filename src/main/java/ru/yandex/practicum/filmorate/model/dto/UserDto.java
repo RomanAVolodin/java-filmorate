@@ -9,6 +9,7 @@ import java.time.LocalDate;
 
 @Data
 public class UserDto {
+
 	@NotBlank(message = "Email should be set")
 	@Email(message = "Enter correct email")
 	private final String email;

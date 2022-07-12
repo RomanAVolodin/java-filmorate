@@ -16,7 +16,7 @@ public class MpaController {
 	private final MpaService service;
 
 	@Autowired
-	MpaController(MpaService service) {
+	public MpaController(MpaService service) {
 		this.service = service;
 	}
 

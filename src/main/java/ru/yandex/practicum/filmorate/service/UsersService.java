@@ -19,7 +19,7 @@ public class UsersService {
 	private final UserStorage storage;
 
 	@Autowired
-	UsersService(@Qualifier("database") UserStorage storage, BaseIdCountable idGenerator) {
+	public UsersService(@Qualifier("database") UserStorage storage, BaseIdCountable idGenerator) {
 		this.storage = storage;
 		this.idGenerator = idGenerator;
 	}

@@ -13,7 +13,7 @@ public class GenresController {
 	private final GenresService service;
 
 	@Autowired
-	GenresController(GenresService service) {
+	public GenresController(GenresService service) {
 		this.service = service;
 	}
 

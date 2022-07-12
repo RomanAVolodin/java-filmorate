@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.interfaces;
 
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.dto.FilmDto;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -11,7 +10,7 @@ public interface FilmStorage {
 
 	Film create(Film film);
 
-	Film replace(FilmDto dto);
+	Film replace(Film film);
 
 	Optional<Film> getById(int id);
 

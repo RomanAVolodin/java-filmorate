@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.dto.FilmDto;
 import ru.yandex.practicum.filmorate.storage.BaseIdCountable;
 import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.interfaces.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.interfaces.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
 
 import java.util.ArrayList;
@@ -23,21 +24,24 @@ public class FilmsService {
 	private final FilmStorage storage;
 	private final UserStorage usersStorage;
 	private final GenreStorage genresStorage;
+	private final MpaStorage mpaStorage;
 
 	@Autowired
-	FilmsService(@Qualifier("database") FilmStorage storage,
+	public FilmsService(@Qualifier("database") FilmStorage storage,
 				 @Qualifier("database") UserStorage usersStorage,
 				 @Qualifier("database") GenreStorage genresStorage,
+				 @Qualifier("database") MpaStorage mpaStorage,
 				 BaseIdCountable idGenerator
 	) {
 		this.storage = storage;
 		this.usersStorage = usersStorage;
 		this.genresStorage = genresStorage;
+		this.mpaStorage = mpaStorage;
 		this.idGenerator = idGenerator;
 	}
 
 	public Film getById(int id) {
-		return storage.getById(id).orElseThrow(() -> new ItemNotFoundException("Film was not found by id"));
+		return storage.getById(id).orElseThrow(() -> new ItemNotFoundException("Film was not found by id: " + id));
 	}
 
 	public Collection<Film> getAll() {
@@ -45,28 +49,7 @@ public class FilmsService {
 	}
 
 	public Film create(FilmDto dto) {
-		var film = new Film(
-				idGenerator.getNextId(),
-				dto.getName(),
-				dto.getDescription(),
-				dto.getReleaseDate(),
-				dto.getDuration(),
-				dto.getRate()
-		);
-		if (dto.getMpa().get("id") != null) {
-			film.setMpaId(dto.getMpa().get("id"));
-		}
-
-		List<Genre> genres = new ArrayList<>();
-		if (dto.getGenres() != null) {
-			for (var genreHash : dto.getGenres()) {
-				var genre = genresStorage.getById(genreHash.get("id")).orElseThrow(
-						() -> new ItemNotFoundException("Genre was not found by id")
-				);
-				genres.add(genre);
-			}
-			film.setGenres(genres);
-		}
+		Film film = buildFilmFromDto(dto);
 
 		return storage.create(film);
 	}
@@ -78,7 +61,8 @@ public class FilmsService {
 
 	public Film replace(FilmDto dto) {
 		var oldFilm = getById(dto.getId());
-		return storage.replace(dto);
+		var film = buildFilmFromDto(dto);
+		return storage.replace(film);
 	}
 
 	public void addLikeFromUser(int id, int userId) {
@@ -102,5 +86,38 @@ public class FilmsService {
 	private User fetchUserFromStorage(int id) {
 		return usersStorage.getById(id)
 				.orElseThrow(() -> new ItemNotFoundException("User was not found by id"));
+	}
+
+	private Film buildFilmFromDto(FilmDto dto) {
+		var film = Film.builder()
+				.id(dto.getId())
+				.name(dto.getName())
+				.description(dto.getDescription())
+				.releaseDate(dto.getReleaseDate())
+				.duration(dto.getDuration())
+				.rate(dto.getRate())
+				.mpaId(dto.getMpa().get("id"))
+				.build();
+
+		List<Genre> genres = new ArrayList<>();
+		if (dto.getGenres() != null) {
+			for (var genreHash : dto.getGenres()) {
+				var genre = genresStorage.getById(genreHash.get("id")).orElseThrow(
+						() -> new ItemNotFoundException("Genre was not found by id")
+				);
+				if (!genres.stream().anyMatch(g -> g.getId().equals(genreHash.get("id")))) {
+					genres.add(genre);
+				}
+
+			}
+			film.setGenres(genres);
+		}
+		if (dto.getMpa() != null) {
+			var mpa = mpaStorage.getById(dto.getMpa().get("id")).orElseThrow(
+					() -> new ItemNotFoundException("Mpa was not found by id")
+			);
+			film.setMpa(mpa);
+		}
+		return film;
 	}
 }

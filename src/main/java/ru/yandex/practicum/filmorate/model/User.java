@@ -11,8 +11,9 @@ import java.util.Set;
 @Data
 @RequiredArgsConstructor
 public class User {
+
 	@NonNull
-	private int id;
+	private Integer id;
 
 	@NonNull
 	private String email;

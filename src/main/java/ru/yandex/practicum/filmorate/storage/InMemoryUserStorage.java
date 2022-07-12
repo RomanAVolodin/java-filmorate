@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 @Qualifier("memory")
 @Slf4j
 public class InMemoryUserStorage implements UserStorage {
+
 	private final HashMap<Integer, User> users = new HashMap<>();
 
 	public Collection<User> getAll() {

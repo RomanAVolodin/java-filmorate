@@ -5,16 +5,18 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.ItemNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.dto.FilmDto;
 import ru.yandex.practicum.filmorate.storage.interfaces.FilmStorage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.sql.Date;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,68 +35,52 @@ public class FilmDbStorage implements FilmStorage {
 		String sql = "select *, " +
 				"(select STRING_AGG(user_id, ',') from likes where film_id = films.id) likes, " +
 				"(select STRING_AGG(genre_id, ',') from film_genre where film_id = films.id) genres_ids, " +
-				"mpas.id as mpa_id, mpas.name as mpas_name from films left join mpas " +
+				"mpas.id as mpa_id, mpas.name as mpa_name from films left join mpas " +
 				"on films.mpa = mpas.id GROUP BY films.id order by films.id asc";
 		return jdbcTemplate.query(sql, (rs, rowNum) -> parseFilm(rs));
 	}
 
 	@Override
 	public Film create(Film film) {
+		KeyHolder key = new GeneratedKeyHolder();
+		jdbcTemplate.update(new PreparedStatementCreator() {
+			@Override
+			public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+				final PreparedStatement ps = connection.prepareStatement(
+						"insert into films (name, description, releasedate, duration, rate, mpa) values (?, ?, ?, ?, ?, ?)",
+						Statement.RETURN_GENERATED_KEYS);
+				ps.setString(1, film.getName());
+				ps.setString(2, film.getDescription());
+				ps.setDate(3, Date.valueOf(film.getReleaseDate()));
+				ps.setInt(4, film.getDuration());
+				ps.setInt(5, film.getRate());
+				ps.setInt(6, film.getMpaId());
+				return ps;
+			}
+		}, key);
+
+		film.setId((Integer) key.getKey());
+		createFilmGenreConnection(film);
+		return film;
+	}
+
+	@Override
+	public Film replace(Film film) {
 		jdbcTemplate.update(
-				"insert into films (name, description, releasedate, duration, rate, mpa) values (?, ?, ?, ?, ?, ?)",
+				"update films " +
+						"set name = ?, description = ?, releasedate = ? , duration = ? , rate = ?, mpa = ? " +
+						"where id = ?",
 				film.getName(),
 				film.getDescription(),
 				film.getReleaseDate(),
 				film.getDuration(),
 				film.getRate(),
-				film.getMpaId()
-		);
-		int id = jdbcTemplate.queryForObject("SELECT id FROM films order by id desc limit 1", Integer.class);
-		if (film.getGenres() != null) {
-			for (Genre genre : film.getGenres()) {
-				jdbcTemplate.update(
-						"insert into film_genre (film_id, genre_id) values (?, ?)",
-						id,
-						genre.getId()
-				);
-			}
-		}
-		var createdFilm = getById(id);
-		return createdFilm.orElseThrow();
-	}
-
-	@Override
-	public Film replace(FilmDto dto) {
-		jdbcTemplate.update(
-				"update films " +
-						"set name = ?, description = ?, releasedate = ? , duration = ? , rate = ?, mpa = ? " +
-						"where id = ?",
-				dto.getName(),
-				dto.getDescription(),
-				dto.getReleaseDate(),
-				dto.getDuration(),
-				dto.getRate(),
-				dto.getMpa().get("id"),
-				dto.getId()
+				film.getMpaId(),
+				film.getId()
 		);
 
-		if (dto.getGenres() != null) {
-			jdbcTemplate.update("delete from film_genre where film_id = ?", dto.getId());
-			for (var genreHash : dto.getGenres() ) {
-				try {
-					jdbcTemplate.update(
-							"insert into film_genre (film_id, genre_id) values (?, ?)",
-							dto.getId(),
-							genreHash.get("id")
-					);
-				} catch (DuplicateKeyException e) {
-					log.warn("Genre already added");
-				}
-
-			}
-		}
-		var updatedFilm = getById(dto.getId());
-		return updatedFilm.orElseThrow();
+		createFilmGenreConnection(film);
+		return film;
 	}
 
 	@Override
@@ -150,14 +136,15 @@ public class FilmDbStorage implements FilmStorage {
 	}
 
 	private Film parseFilm(ResultSet rs) throws SQLException {
-		var film = new Film(
-				rs.getInt("id"),
-				rs.getString("name"),
-				rs.getString("description"),
-				rs.getDate("releasedate").toLocalDate(),
-				rs.getInt("duration"),
-				rs.getInt("rate")
-		);
+		var film = Film.builder()
+				.id(rs.getInt("id"))
+				.name(rs.getString("name"))
+				.description(rs.getString("description"))
+				.releaseDate(rs.getDate("releasedate").toLocalDate())
+				.duration(rs.getInt("duration"))
+				.rate(rs.getInt("rate"))
+				.mpaId(rs.getInt("mpa"))
+				.build();
 		film.setLikesAmount(rs.getInt("likesAmount"));
 		if (rs.getInt("mpa_id") > 0 && !rs.getString("mpa_name").isEmpty()) {
 			film.setMpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
@@ -188,4 +175,21 @@ public class FilmDbStorage implements FilmStorage {
 		return film;
 	}
 
+	private void createFilmGenreConnection(Film film) {
+		if (film.getGenres() != null) {
+			jdbcTemplate.update("delete from film_genre where film_id = ?", film.getId());
+			for (var genre : film.getGenres() ) {
+				try {
+					jdbcTemplate.update(
+							"insert into film_genre (film_id, genre_id) values (?, ?)",
+							film.getId(),
+							genre.getId()
+					);
+				} catch (DuplicateKeyException e) {
+					log.warn("Genre already added");
+				}
+
+			}
+		}
+	}
 }

@@ -13,6 +13,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.Collection;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
 @Validated
 @Slf4j
@@ -21,7 +23,7 @@ public class FilmController {
 	private final FilmsService service;
 
 	@Autowired
-	FilmController(FilmsService service) {
+	public FilmController(FilmsService service) {
 		this.service = service;
 	}
 
@@ -40,14 +42,14 @@ public class FilmController {
 		return service.getById(id);
 	}
 
-	@PostMapping(value = "", consumes = {"application/json"})
+	@PostMapping(value = "", consumes = {APPLICATION_JSON_VALUE})
 	@ResponseStatus(HttpStatus.CREATED)
 	public Film create(@Valid @RequestBody FilmDto dto) {
 		log.info("Film created: {}", dto);
 		return service.create(dto);
 	}
 
-	@PatchMapping(value = "{id}", consumes = {"application/json"})
+	@PatchMapping(value = "{id}", consumes = {APPLICATION_JSON_VALUE})
 	public Film updateFilm(@PathVariable(name = "id") int id, @Valid @RequestBody FilmDto dto) {
 		log.info("Film is updating: {}", dto);
 		return service.update(id, dto);
