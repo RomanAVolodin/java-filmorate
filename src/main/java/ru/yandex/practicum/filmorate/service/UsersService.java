@@ -1,17 +1,17 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exceptions.ItemNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.dto.UserDto;
 import ru.yandex.practicum.filmorate.storage.BaseIdCountable;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.interfaces.UserStorage;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UsersService {
@@ -19,7 +19,7 @@ public class UsersService {
 	private final UserStorage storage;
 
 	@Autowired
-	UsersService(InMemoryUserStorage storage, BaseIdCountable idGenerator) {
+	public UsersService(@Qualifier("database") UserStorage storage, BaseIdCountable idGenerator) {
 		this.storage = storage;
 		this.idGenerator = idGenerator;
 	}
@@ -33,9 +33,13 @@ public class UsersService {
 	}
 
 	public User create(UserDto dto) {
-		var user = new User(
-				idGenerator.getNextId(), dto.getEmail(), dto.getLogin(), calculateName(dto), dto.getBirthday()
-		);
+		var user = User.builder()
+				.id(idGenerator.getNextId())
+				.email(dto.getEmail())
+				.login(dto.getLogin())
+				.name(calculateName(dto))
+				.birthday(dto.getBirthday())
+				.build();
 		return storage.create(user);
 	}
 
@@ -56,29 +60,24 @@ public class UsersService {
 	public void addFriendToUser(int id, int friendId) {
 		var user = getById(id);
 		var friend = getById(friendId);
-		user.addFriend(friendId);
-		friend.addFriend(id);
+		storage.addFriend(user.getId(), friend.getId());
 	}
 
 	public void removeFriendFromUser(int id, int friendId) {
-		var user = getById(id);
-		var friend = getById(friendId);
-		user.removeFriend(friendId);
-		friend.removeFriend(id);
+		storage.removeFriend(id, friendId);
 	}
 
 	public Collection<User> getFriendsForUser(int id) {
 		var user = getById(id);
-		var usersIds = user.getFriends();
-		return storage.getUsersByIdSet(usersIds);
+		return storage.getUserFriends(user.getId());
 	}
 
 	public Collection<User> getCommonFriendsForUsers(int id, int otherId) {
 		var firstUser = getById(id);
 		var secondUser = getById(otherId);
 
-		Set<Integer> commonIds = new HashSet<>(firstUser.getFriends());
-		commonIds.retainAll(secondUser.getFriends());
+		Set<Integer> commonIds = getFriendsForUser(firstUser.getId()).stream().map(User::getId).collect(Collectors.toSet());
+		commonIds.retainAll(getFriendsForUser(secondUser.getId()).stream().map(User::getId).collect(Collectors.toSet()));
 		return storage.getUsersByIdSet(commonIds);
 	}
 
