@@ -144,8 +144,8 @@ public class FilmDbStorage implements FilmStorage {
 				.duration(rs.getInt("duration"))
 				.rate(rs.getInt("rate"))
 				.mpaId(rs.getInt("mpa"))
+				.likesAmount(rs.getInt("likesAmount"))
 				.build();
-		film.setLikesAmount(rs.getInt("likesAmount"));
 		if (rs.getInt("mpa_id") > 0 && !rs.getString("mpa_name").isEmpty()) {
 			film.setMpa(new Mpa(rs.getInt("mpa_id"), rs.getString("mpa_name")));
 		}

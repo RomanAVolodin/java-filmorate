@@ -98,12 +98,12 @@ public class UserDbStorage implements UserStorage {
 	}
 
 	private User parseUser(ResultSet rs) throws SQLException {
-		return new User(
-				rs.getInt("id"),
-				rs.getString("email"),
-				rs.getString("login"),
-				rs.getString("name"),
-				rs.getDate("birthday").toLocalDate()
-		);
+		return User.builder()
+				.id(rs.getInt("id"))
+				.email(rs.getString("email"))
+				.login(rs.getString("login"))
+				.name(rs.getString("name"))
+				.birthday(rs.getDate("birthday").toLocalDate())
+				.build();
 	}
 }

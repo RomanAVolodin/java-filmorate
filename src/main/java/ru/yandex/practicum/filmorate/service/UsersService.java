@@ -33,9 +33,13 @@ public class UsersService {
 	}
 
 	public User create(UserDto dto) {
-		var user = new User(
-				idGenerator.getNextId(), dto.getEmail(), dto.getLogin(), calculateName(dto), dto.getBirthday()
-		);
+		var user = User.builder()
+				.id(idGenerator.getNextId())
+				.email(dto.getEmail())
+				.login(dto.getLogin())
+				.name(calculateName(dto))
+				.birthday(dto.getBirthday())
+				.build();
 		return storage.create(user);
 	}
 
@@ -56,28 +60,24 @@ public class UsersService {
 	public void addFriendToUser(int id, int friendId) {
 		var user = getById(id);
 		var friend = getById(friendId);
-		storage.addFriend(id, friendId);
+		storage.addFriend(user.getId(), friend.getId());
 	}
 
 	public void removeFriendFromUser(int id, int friendId) {
-		var user = getById(id);
-		var friend = getById(friendId);
-		user.removeFriend(friendId);
-		friend.removeFriend(id);
 		storage.removeFriend(id, friendId);
 	}
 
 	public Collection<User> getFriendsForUser(int id) {
 		var user = getById(id);
-		return storage.getUserFriends(id);
+		return storage.getUserFriends(user.getId());
 	}
 
 	public Collection<User> getCommonFriendsForUsers(int id, int otherId) {
 		var firstUser = getById(id);
 		var secondUser = getById(otherId);
 
-		Set<Integer> commonIds = getFriendsForUser(id).stream().map(User::getId).collect(Collectors.toSet());
-		commonIds.retainAll(getFriendsForUser(otherId).stream().map(User::getId).collect(Collectors.toSet()));
+		Set<Integer> commonIds = getFriendsForUser(firstUser.getId()).stream().map(User::getId).collect(Collectors.toSet());
+		commonIds.retainAll(getFriendsForUser(secondUser.getId()).stream().map(User::getId).collect(Collectors.toSet()));
 		return storage.getUsersByIdSet(commonIds);
 	}
 

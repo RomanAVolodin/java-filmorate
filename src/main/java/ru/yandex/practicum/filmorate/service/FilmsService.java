@@ -50,7 +50,6 @@ public class FilmsService {
 
 	public Film create(FilmDto dto) {
 		Film film = buildFilmFromDto(dto);
-
 		return storage.create(film);
 	}
 
@@ -96,7 +95,7 @@ public class FilmsService {
 				.releaseDate(dto.getReleaseDate())
 				.duration(dto.getDuration())
 				.rate(dto.getRate())
-				.mpaId(dto.getMpa().get("id"))
+				.mpaId(dto.getMpa() != null ? dto.getMpa().get("id") : null)
 				.build();
 
 		List<Genre> genres = new ArrayList<>();
@@ -105,7 +104,7 @@ public class FilmsService {
 				var genre = genresStorage.getById(genreHash.get("id")).orElseThrow(
 						() -> new ItemNotFoundException("Genre was not found by id")
 				);
-				if (!genres.stream().anyMatch(g -> g.getId().equals(genreHash.get("id")))) {
+				if (genres.stream().noneMatch(g -> g.getId().equals(genreHash.get("id")))) {
 					genres.add(genre);
 				}
 
